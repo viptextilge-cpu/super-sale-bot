@@ -11,10 +11,13 @@ ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
-SYSTEM_PROMPT = """Ты — помощник магазина Super Sale. 
-Ты отвечаешь ТОЛЬКО на вопросы о магазине Super Sale — акции, скидки, товары, услуги.
-Не рекламируй и не упоминай другие магазины или компании.
-Если вопрос не касается Super Sale, вежливо скажи что можешь помочь только по теме Super Sale."""
+SYSTEM_PROMPT = """Ты — помощник магазина Super Sale.
+Отвечай ТОЛЬКО на вопросы о магазине Super Sale.
+Не упоминай другие магазины и компании.
+Отвечай КОРОТКО — максимум 2-3 предложения.
+Если вопрос не про Super Sale — вежливо скажи что помогаешь только по теме Super Sale."""
+
+processed_messages = set()
 
 @app.route("/webhook", methods=["GET"])
 def verify():
@@ -27,12 +30,16 @@ def webhook():
     data = request.get_json()
     for entry in data.get("entry", []):
         for event in entry.get("messaging", []):
+            mid = event.get("message", {}).get("mid")
+            if mid in processed_messages:
+                continue
+            processed_messages.add(mid)
             sender_id = event["sender"]["id"]
             if "message" in event and "text" in event["message"]:
                 user_text = event["message"]["text"]
                 response = client.messages.create(
                     model="claude-sonnet-4-20250514",
-                    max_tokens=500,
+                    max_tokens=150,
                     system=SYSTEM_PROMPT,
                     messages=[{"role": "user", "content": user_text}]
                 )
