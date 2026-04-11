@@ -3,7 +3,7 @@ import anthropic
 import requests
 from flask import Flask, request, jsonify
 
-app = Flask(_name_)
+app = Flask(__name__)
 
 VERIFY_TOKEN = os.environ.get("VERIFY_TOKEN", "mysecrettoken")
 PAGE_ACCESS_TOKEN = os.environ.get("PAGE_ACCESS_TOKEN")
@@ -19,7 +19,7 @@ def verify():
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    data = request.json
+    data = request.get_json()
     for entry in data.get("entry", []):
         for event in entry.get("messaging", []):
             sender_id = event["sender"]["id"]
@@ -32,12 +32,8 @@ def webhook():
                 )
                 reply = response.content[0].text
                 requests.post(
-                    f"https://graph.facebook.com/v18.0/me/messages",
+                    "https://graph.facebook.com/v18.0/me/messages",
                     params={"access_token": PAGE_ACCESS_TOKEN},
                     json={"recipient": {"id": sender_id}, "message": {"text": reply}}
                 )
     return jsonify({"status": "ok"})
-
-if _name_ == "_main_":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
