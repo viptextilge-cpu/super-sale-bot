@@ -20,6 +20,7 @@ SYSTEM_PROMPT = """Ты — помощник магазина Super Sale.
 Если вопрос не про Super Sale — вежливо скажи что помогаешь только по теме Super Sale."""
 
 processed_messages = set()
+operator_requested = set()
 
 def send_message(recipient_id, text):
     requests.post(
@@ -54,7 +55,6 @@ def send_operator_button(recipient_id):
     )
 
 def notify_operator(sender_id):
-    """Отправляет уведомление в inbox страницы"""
     requests.post(
         "https://graph.facebook.com/v18.0/me/messages",
         params={"access_token": PAGE_ACCESS_TOKEN},
@@ -83,12 +83,16 @@ def webhook():
             processed_messages.add(mid)
             sender_id = event["sender"]["id"]
 
-            # Клиент нажал кнопку "Связаться с оператором"
+            # Клиент нажал кнопку оператора
             if "postback" in event and event["postback"].get("payload") == "CONTACT_OPERATOR":
+                operator_requested.add(sender_id)
                 notify_operator(sender_id)
-                # Уведомление для тебя в inbox
                 send_message("260986207108217",
                     f"🔔 НОВЫЙ ЗАПРОС ОПЕРАТОРА!\nКлиент ID: {sender_id}\nОткрой inbox и ответь вручную.")
+                continue
+
+            # Если клиент уже запросил оператора — бот молчит
+            if sender_id in operator_requested:
                 continue
 
             # Обычное текстовое сообщение
@@ -102,7 +106,6 @@ def webhook():
                 )
                 reply = response.content[0].text
                 send_message(sender_id, reply)
-                # После каждого ответа показываем кнопку оператора
                 send_operator_button(sender_id)
 
     return jsonify({"status": "ok"})
