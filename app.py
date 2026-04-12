@@ -4,7 +4,7 @@ import anthropic
 import requests
 from flask import Flask, request, jsonify
 
-app = Flask(__name__)
+app = Flask(_name_)
 
 VERIFY_TOKEN = os.environ.get("VERIFY_TOKEN", "mysecrettoken")
 PAGE_ACCESS_TOKEN = os.environ.get("PAGE_ACCESS_TOKEN")
@@ -101,37 +101,49 @@ def webhook():
 
     for entry in data.get("entry", []):
         for event in entry.get("messaging", []):
-            mid = event.get("message", {}).get("mid")
-            if mid in processed_messages:
-                continue
-            processed_messages.add(mid)
             sender_id = event["sender"]["id"]
 
-            if "postback" in event and event["postback"].get("payload") == "CONTACT_OPERATOR":
-                operator_requested.add(sender_id)
-                save_operator_requested(operator_requested)
-                notify_operator(sender_id)
-                send_message("260986207108217",
-                    f"🔔 ЗАПРОС ОПЕРАТОРА! Клиент ID: {sender_id}")
+            # Обработка postback (нажатие кнопки)
+            if "postback" in event:
+                payload = event["postback"].get("payload")
+                postback_id = f"postback_{sender_id}_{event.get('timestamp')}"
+                if postback_id in processed_messages:
+                    continue
+                processed_messages.add(postback_id)
+
+                if payload == "CONTACT_OPERATOR":
+                    operator_requested.add(sender_id)
+                    save_operator_requested(operator_requested)
+                    notify_operator(sender_id)
+                    send_message("260986207108217",
+                        f"🔔 ЗАПРОС ОПЕРАТОРА! Клиент ID: {sender_id}")
                 continue
 
-            if sender_id in operator_requested:
-                continue
+            # Обработка текстового сообщения
+            if "message" in event:
+                mid = event["message"].get("mid")
+                if mid and mid in processed_messages:
+                    continue
+                if mid:
+                    processed_messages.add(mid)
 
-            if "message" in event and "text" in event["message"]:
-                user_text = event["message"]["text"]
-                response = client.messages.create(
-                    model="claude-sonnet-4-20250514",
-                    max_tokens=150,
-                    system=SYSTEM_PROMPT,
-                    messages=[{"role": "user", "content": user_text}]
-                )
-                reply = response.content[0].text
-                send_message(sender_id, reply)
-                send_operator_button(sender_id)
+                if sender_id in operator_requested:
+                    continue
+
+                if "text" in event["message"]:
+                    user_text = event["message"]["text"]
+                    response = client.messages.create(
+                        model="claude-haiku-4-5-20251001",
+                        max_tokens=150,
+                        system=SYSTEM_PROMPT,
+                        messages=[{"role": "user", "content": user_text}]
+                    )
+                    reply = response.content[0].text
+                    send_message(sender_id, reply)
+                    send_operator_button(sender_id)
 
     return jsonify({"status": "ok"})
 
-if __name__ == "__main__":
+if _name_ == "_main_":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port, debug=False)
