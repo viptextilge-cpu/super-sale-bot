@@ -1,4 +1,5 @@
 import os
+import json
 import anthropic
 import requests
 from flask import Flask, request, jsonify
@@ -15,12 +16,33 @@ SYSTEM_PROMPT = """Ты — помощник магазина Super Sale.
 Отвечай ТОЛЬКО на вопросы о магазине Super Sale.
 Не упоминай другие магазины и компании.
 Отвечай КОРОТКО — максимум 2-3 предложения.
-ОЧЕНЬ ВАЖНО: всегда отвечай на том же языке, на котором пишет клиент.
-ОЧЕНЬ ВАЖНО: никогда не выдумывай товары и их характеристики. Если клиент спрашивает про конкретный товар или цену — отвечай: 'Для подробной информации, пожалуйста, свяжитесь с нами напрямую.'
-Если вопрос не про Super Sale — вежливо скажи что помогаешь только по теме Super Sale."""
+
+ЯЗЫК — САМОЕ ВАЖНОЕ ПРАВИЛО:
+- Если клиент пишет на грузинском — отвечай ТОЛЬКО на грузинском
+- Если клиент пишет на русском — отвечай ТОЛЬКО на русском
+- Если клиент пишет на английском — отвечай ТОЛЬКО на английском
+- НИКОГДА не меняй язык ответа. Отвечай строго на том языке на котором написал клиент.
+
+ОЧЕНЬ ВАЖНО: никогда не выдумывай товары и их характеристики. Если клиент спрашивает про конкретный товар или цену — отвечай на его языке: для грузинского 'დეტალური ინფორმაციისთვის გთხოვთ დაგვიკავშირდეთ პირდაპირ', для русского 'Для подробной информации, пожалуйста, свяжитесь с нами напрямую.'
+Если вопрос не про Super Sale — вежливо скажи на языке клиента что помогаешь только по теме Super Sale."""
+
+OPERATOR_FILE = "/tmp/operator_requested.json"
+
+def load_operator_requested():
+    try:
+        with open(OPERATOR_FILE, "r") as f:
+            return set(json.load(f))
+    except:
+        return set()
+
+def save_operator_requested(data):
+    try:
+        with open(OPERATOR_FILE, "w") as f:
+            json.dump(list(data), f)
+    except:
+        pass
 
 processed_messages = set()
-operator_requested = set()
 
 def send_message(recipient_id, text):
     requests.post(
@@ -75,6 +97,8 @@ def verify():
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = request.get_json()
+    operator_requested = load_operator_requested()
+
     for entry in data.get("entry", []):
         for event in entry.get("messaging", []):
             mid = event.get("message", {}).get("mid")
@@ -86,6 +110,7 @@ def webhook():
             # Клиент нажал кнопку оператора
             if "postback" in event and event["postback"].get("payload") == "CONTACT_OPERATOR":
                 operator_requested.add(sender_id)
+                save_operator_requested(operator_requested)
                 notify_operator(sender_id)
                 send_message("260986207108217",
                     f"🔔 НОВЫЙ ЗАПРОС ОПЕРАТОРА!\nКлиент ID: {sender_id}\nОткрой inbox и ответь вручную.")
