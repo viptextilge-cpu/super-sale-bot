@@ -39,11 +39,11 @@ def send_operator_button(recipient_id):
                     "type": "template",
                     "payload": {
                         "template_type": "button",
-                        "text": "Хотите связаться с живым оператором?",
+                        "text": "გსურთ ოპერატორთან დაკავშირება?",
                         "buttons": [
                             {
                                 "type": "postback",
-                                "title": "👤 Связаться с оператором",
+                                "title": "👤 ოპერატორთან დაკავშირება",
                                 "payload": "CONTACT_OPERATOR"
                             }
                         ]
@@ -61,7 +61,7 @@ def notify_operator(sender_id):
         json={
             "recipient": {"id": sender_id},
             "message": {
-                "text": "✅ Оператор скоро свяжется с вами!"
+                "text": "✅ ოპერატორი მალე დაგიკავშირდებათ!"
             }
         }
     )
