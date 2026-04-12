@@ -16,10 +16,55 @@ SYSTEM_PROMPT = """Ты — помощник магазина Super Sale.
 Не упоминай другие магазины и компании.
 Отвечай КОРОТКО — максимум 2-3 предложения.
 ОЧЕНЬ ВАЖНО: всегда отвечай на том же языке, на котором пишет клиент.
-ОЧЕНЬ ВАЖНО: никогда не выдумывай товары и их характеристики. Если клиент спрашивает про конкретный товар или цену — отвечай: "Для подробной информации, пожалуйста, свяжитесь с нами напрямую."
+ОЧЕНЬ ВАЖНО: никогда не выдумывай товары и их характеристики. Если клиент спрашивает про конкретный товар или цену — отвечай: 'Для подробной информации, пожалуйста, свяжитесь с нами напрямую.'
 Если вопрос не про Super Sale — вежливо скажи что помогаешь только по теме Super Sale."""
 
 processed_messages = set()
+
+def send_message(recipient_id, text):
+    requests.post(
+        "https://graph.facebook.com/v18.0/me/messages",
+        params={"access_token": PAGE_ACCESS_TOKEN},
+        json={"recipient": {"id": recipient_id}, "message": {"text": text}}
+    )
+
+def send_operator_button(recipient_id):
+    requests.post(
+        "https://graph.facebook.com/v18.0/me/messages",
+        params={"access_token": PAGE_ACCESS_TOKEN},
+        json={
+            "recipient": {"id": recipient_id},
+            "message": {
+                "attachment": {
+                    "type": "template",
+                    "payload": {
+                        "template_type": "button",
+                        "text": "Хотите связаться с живым оператором?",
+                        "buttons": [
+                            {
+                                "type": "postback",
+                                "title": "👤 Связаться с оператором",
+                                "payload": "CONTACT_OPERATOR"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    )
+
+def notify_operator(sender_id):
+    """Отправляет уведомление в inbox страницы"""
+    requests.post(
+        "https://graph.facebook.com/v18.0/me/messages",
+        params={"access_token": PAGE_ACCESS_TOKEN},
+        json={
+            "recipient": {"id": sender_id},
+            "message": {
+                "text": "✅ Оператор скоро свяжется с вами!"
+            }
+        }
+    )
 
 @app.route("/webhook", methods=["GET"])
 def verify():
@@ -37,6 +82,16 @@ def webhook():
                 continue
             processed_messages.add(mid)
             sender_id = event["sender"]["id"]
+
+            # Клиент нажал кнопку "Связаться с оператором"
+            if "postback" in event and event["postback"].get("payload") == "CONTACT_OPERATOR":
+                notify_operator(sender_id)
+                # Уведомление для тебя в inbox
+                send_message("260986207108217",
+                    f"🔔 НОВЫЙ ЗАПРОС ОПЕРАТОРА!\nКлиент ID: {sender_id}\nОткрой inbox и ответь вручную.")
+                continue
+
+            # Обычное текстовое сообщение
             if "message" in event and "text" in event["message"]:
                 user_text = event["message"]["text"]
                 response = client.messages.create(
@@ -46,9 +101,11 @@ def webhook():
                     messages=[{"role": "user", "content": user_text}]
                 )
                 reply = response.content[0].text
-                requests.post(
-                    "https://graph.facebook.com/v18.0/me/messages",
-                    params={"access_token": PAGE_ACCESS_TOKEN},
-                    json={"recipient": {"id": sender_id}, "message": {"text": reply}}
-                )
+                send_message(sender_id, reply)
+                # После каждого ответа показываем кнопку оператора
+                send_operator_button(sender_id)
+
     return jsonify({"status": "ok"})
+
+if __name__ == "__main__":
+    app.run(debug=True)
