@@ -422,7 +422,8 @@ def webhook():
     return jsonify({"status": "ok"}), 200
 
 
+validate_env()
+init_clients()
+
 if __name__ == "__main__":
-    validate_env()
-    init_clients()
     app.run(host="0.0.0.0", port=PORT, debug=False)
