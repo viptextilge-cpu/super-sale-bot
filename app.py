@@ -222,11 +222,11 @@ def send_operator_button(recipient_id: str) -> Optional[dict]:
                 "type": "template",
                 "payload": {
                     "template_type": "button",
-                    "text": "gsurt operatortan dakavshireba?",
+                    "text": "გსურთ ოპერატორთან დაკავშირება?",
                     "buttons": [
                         {
                             "type": "postback",
-                            "title": "Operatortan dakavshireba",
+                            "title": "ოპერატორთან დაკავშირება",
                             "payload": CONTACT_OPERATOR_PAYLOAD
                         }
                     ]
@@ -237,7 +237,7 @@ def send_operator_button(recipient_id: str) -> Optional[dict]:
 
 
 def notify_user_operator_requested(sender_id: str) -> None:
-    send_text_message(sender_id, "Operator male dagikavshirdebat!")
+    send_text_message(sender_id, "ოპერატორი მალე დაგიკავშირდებათ!")
 
 
 def notify_user_back_to_bot(sender_id: str) -> None:
