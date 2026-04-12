@@ -12,19 +12,7 @@ ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
-SYSTEM_PROMPT = """Ты — помощник магазина Super Sale.
-Отвечай ТОЛЬКО на вопросы о магазине Super Sale.
-Не упоминай другие магазины и компании.
-Отвечай КОРОТКО — максимум 2-3 предложения.
-
-ЯЗЫК — САМОЕ ВАЖНОЕ ПРАВИЛО:
-- Если клиент пишет на грузинском — отвечай ТОЛЬКО на грузинском
-- Если клиент пишет на русском — отвечай ТОЛЬКО на русском
-- Если клиент пишет на английском — отвечай ТОЛЬКО на английском
-- НИКОГДА не меняй язык ответа. Отвечай строго на том языке на котором написал клиент.
-
-ОЧЕНЬ ВАЖНО: никогда не выдумывай товары и их характеристики. Если клиент спрашивает про конкретный товар или цену — отвечай на его языке: для грузинского 'დეტალური ინფორმაციისთვის გთხოვთ დაგვიკავშირდეთ პირდაპირ', для русского 'Для подробной информации, пожалуйста, свяжитесь с нами напрямую.'
-Если вопрос не про Super Sale — вежливо скажи на языке клиента что помогаешь только по теме Super Sale."""
+SYSTEM_PROMPT = "Ty - pomoshnik magazina Super Sale. Otvechay TOLKO na voprosy o magazine Super Sale. Ne upominay drugie magaziny. Otvechay KOROTKO - maksimum 2-3 predlozheniya. YAZYK: esli klient pishet na gruzinskom - otvechay na gruzinskom. Esli na russkom - otvechay na russkom. Esli na angliyskom - otvechay na angliyskom. NIKOGDA ne menyay yazyk. OCHEN VAZHNO: nikogda ne vydumyvay tovary i tseny."
 
 OPERATOR_FILE = "/tmp/operator_requested.json"
 
@@ -62,11 +50,11 @@ def send_operator_button(recipient_id):
                     "type": "template",
                     "payload": {
                         "template_type": "button",
-                        "text": "გსურთ ოპერატორთან დაკავშირება?",
+                        "text": "gsurt operatortan dakavshireba?",
                         "buttons": [
                             {
                                 "type": "postback",
-                                "title": "👤 ოპერატორთან დაკავშირება",
+                                "title": "Operatortan dakavshireba",
                                 "payload": "CONTACT_OPERATOR"
                             }
                         ]
@@ -83,7 +71,7 @@ def notify_operator(sender_id):
         json={
             "recipient": {"id": sender_id},
             "message": {
-                "text": "✅ ოპერატორი მალე დაგიკავშირდებათ!"
+                "text": "Operator male dagikavshirdebat!"
             }
         }
     )
@@ -103,33 +91,27 @@ def webhook():
         for event in entry.get("messaging", []):
             sender_id = event["sender"]["id"]
 
-            # Обработка postback (нажатие кнопки)
             if "postback" in event:
                 payload = event["postback"].get("payload")
-                postback_id = f"postback_{sender_id}_{event.get('timestamp')}"
+                postback_id = "postback_" + sender_id + "_" + str(event.get("timestamp"))
                 if postback_id in processed_messages:
                     continue
                 processed_messages.add(postback_id)
-
                 if payload == "CONTACT_OPERATOR":
                     operator_requested.add(sender_id)
                     save_operator_requested(operator_requested)
                     notify_operator(sender_id)
-                    send_message("260986207108217",
-                        f"🔔 ЗАПРОС ОПЕРАТОРА! Клиент ID: {sender_id}")
+                    send_message("260986207108217", "ZAPROS OPERATORA! Klient ID: " + sender_id)
                 continue
 
-            # Обработка текстового сообщения
             if "message" in event:
                 mid = event["message"].get("mid")
                 if mid and mid in processed_messages:
                     continue
                 if mid:
                     processed_messages.add(mid)
-
                 if sender_id in operator_requested:
                     continue
-
                 if "text" in event["message"]:
                     user_text = event["message"]["text"]
                     response = client.messages.create(
