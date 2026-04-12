@@ -107,20 +107,17 @@ def webhook():
             processed_messages.add(mid)
             sender_id = event["sender"]["id"]
 
-            # Клиент нажал кнопку оператора
             if "postback" in event and event["postback"].get("payload") == "CONTACT_OPERATOR":
                 operator_requested.add(sender_id)
                 save_operator_requested(operator_requested)
                 notify_operator(sender_id)
                 send_message("260986207108217",
-                    f"🔔 НОВЫЙ ЗАПРОС ОПЕРАТОРА!\nКлиент ID: {sender_id}\nОткрой inbox и ответь вручную.")
+                    f"🔔 ЗАПРОС ОПЕРАТОРА! Клиент ID: {sender_id}")
                 continue
 
-            # Если клиент уже запросил оператора — бот молчит
             if sender_id in operator_requested:
                 continue
 
-            # Обычное текстовое сообщение
             if "message" in event and "text" in event["message"]:
                 user_text = event["message"]["text"]
                 response = client.messages.create(
