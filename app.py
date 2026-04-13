@@ -330,12 +330,12 @@ def handle_operator_commands(sender_id: str, user_text: str) -> bool:
 
         if command in RESET_TO_BOT_COMMANDS:
             if len(parts) != 2:
-                send_text_message(sender_id, "Format: /bot <client_id>")
+                send_text_message(sender_id, "ფორმატი: /bot <client_id>")
                 return True
 
             target_user_id = parts[1].strip()
             if not target_user_id:
-                send_text_message(sender_id, "Format: /bot <client_id>")
+                send_text_message(sender_id, "ფორმატი: /bot <client_id>")
                 return True
 
             remove_operator_requested(target_user_id)
