@@ -360,11 +360,12 @@ def handle_message(sender_id: str, event: dict) -> None:
         return
 
     user_text = message.get("text", "")
+    
     if user_text.strip() == "ოპერატორთან დაკავშირება":
-    add_operator_requested(sender_id)
-    notify_user_operator_requested(sender_id)
-    notify_operator_new_request(sender_id)
-    return
+        add_operator_requested(sender_id)
+        notify_user_operator_requested(sender_id)
+        notify_operator_new_request(sender_id)
+        return
     if handle_operator_commands(sender_id, user_text):
         return
 
