@@ -179,10 +179,12 @@ def save_settings(data: dict) -> None:
 
 
 def get_operator_psid() -> Optional[str]:
+    env_psid = os.environ.get("OPERATOR_PSID")
+    if env_psid:
+        return str(env_psid)
     settings = load_settings()
     operator_psid = settings.get("operator_psid")
     return str(operator_psid) if operator_psid else None
-
 
 def set_operator_psid(psid: str) -> None:
     settings = load_settings()
