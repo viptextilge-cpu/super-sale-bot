@@ -409,6 +409,7 @@ def webhook():
         return jsonify({"error": "invalid signature"}), 403
 
     data = request.get_json(silent=True) or {}
+    logger.info("FULL EVENT: %s", data
 
     if data.get("object") != "page":
         return jsonify({"status": "ignored"}), 200
