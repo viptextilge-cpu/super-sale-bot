@@ -310,6 +310,7 @@ def handle_postback(sender_id: str, event: dict) -> None:
     remember_processed(event_id)
 
     payload = event.get("postback", {}).get("payload")
+    logger.info("POSTBACK payload=%s sender_id=%s", payload, sender_id)
     if payload == CONTACT_OPERATOR_PAYLOAD:
         add_operator_requested(sender_id)
         notify_user_operator_requested(sender_id)
