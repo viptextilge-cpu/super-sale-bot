@@ -239,11 +239,11 @@ def send_operator_button(recipient_id: str) -> Optional[dict]:
 
 
 def notify_user_operator_requested(sender_id: str) -> None:
-    send_text_message(sender_id, "ოპერატორი მალე დაგიკავშირდებათ!")
+    send_text_message(sender_id, "ოპერატორი მალე დაგიკავშირდებათ. გთხოვთ, დაელოდოთ.")
 
 
 def notify_user_back_to_bot(sender_id: str) -> None:
-    send_text_message(sender_id, "თქვენ კვლავ ბოტს დაუბრუნდით. შეგიძლიათ კითხვები დასვათ!")
+    send_text_message(sender_id, "თქვენ ისევ ბოტთან საუბრობთ. შეგიძლიათ დასვათ შეკითხვა!")
 
 
 def notify_operator_new_request(sender_id: str) -> None:
@@ -251,7 +251,7 @@ def notify_operator_new_request(sender_id: str) -> None:
     if not operator_psid:
         logger.warning("Operator PSID is not set yet")
         return
-    send_text_message(operator_psid, f"🔔 ახალი მოთხოვნა ოპერატორთან! კლიენტი ID: {sender_id}")
+    send_text_message(operator_psid, f"🔔 ოპერატორთან დაკავშირების ახალი მოთხოვნა! კლიენტი ID: {sender_id}")
 
 
 def notify_operator_bot_restored(sender_id: str) -> None:
@@ -259,7 +259,7 @@ def notify_operator_bot_restored(sender_id: str) -> None:
     if not operator_psid:
         logger.warning("Operator PSID is not set yet")
         return
-    send_text_message(operator_psid, f"🤖 ბოტი დაუბრუნდა კლიენტს ID: {sender_id}")
+    send_text_message(operator_psid, f"🤖 კლიენტი დაბრუნდა ბოტთან  ID: {sender_id}")
 
 
 def extract_anthropic_text(response) -> str:
@@ -322,7 +322,7 @@ def handle_operator_commands(sender_id: str, user_text: str) -> bool:
 
     if text == SET_OPERATOR_COMMAND:
         set_operator_psid(sender_id)
-        send_text_message(sender_id, "თქვენ დაყენებული ხართ ოპერატორად. ✅.")
+        send_text_message(sender_id, "თქვენ უკვე ოპერატორი ხართ ✅")
         logger.info("Operator PSID set to %s", sender_id)
         return True
 
@@ -368,7 +368,7 @@ def handle_message(sender_id: str, event: dict) -> None:
         return
 
     if not user_text:
-        send_text_message(sender_id, "გთხოვთ გამოაგზავნოთ ტექსტური შეტყობინება.")
+        send_text_message(sender_id, "გთხოვთ, დაწერეთ ტექსტური შეტყობინება.")
         send_operator_button(sender_id)
         return
 
