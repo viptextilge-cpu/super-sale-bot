@@ -241,7 +241,7 @@ def notify_user_operator_requested(sender_id: str) -> None:
 
 
 def notify_user_back_to_bot(sender_id: str) -> None:
-    send_text_message(sender_id, "თქვენი მოთხოვნა მიღებულია. ოპერატორი მალე დაგიკავშირდებათ!")
+    send_text_message(sender_id, "თქვენ კვლავ ბოტს დაუბრუნდით. შეგიძლიათ კითხვები დასვათ!")
 
 
 def notify_operator_new_request(sender_id: str) -> None:
@@ -280,11 +280,11 @@ def generate_reply(user_text: str) -> str:
         )
         reply = extract_anthropic_text(response)
         if not reply:
-            return "Izvinite, seychas ne mogu otvetit. Poprobuyte eshche raz."
+            return "უკაცრავად, ვერ ვპასუხობ. სცადეთ თავიდან."
         return reply
     except Exception:
         logger.exception("Anthropic request failed")
-        return "Izvinite, seychas vremennaya oshibka. Poprobuyte cherez paru minut."
+        return "უკაცრავად, დროებითი შეცდომა. სცადეთ რამდენიმე წუთში."
 
 
 def event_id_for_postback(sender_id: str, event: dict) -> str:
@@ -366,7 +366,7 @@ def handle_message(sender_id: str, event: dict) -> None:
         return
 
     if not user_text:
-        send_text_message(sender_id, "Pozhaluysta, otpravte tekstovoe soobshchenie.")
+        send_text_message(sender_id, "გთხოვთ გამოაგზავნოთ ტექსტური შეტყობინება.")
         send_operator_button(sender_id)
         return
 
