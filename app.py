@@ -241,7 +241,7 @@ def notify_user_operator_requested(sender_id: str) -> None:
 
 
 def notify_user_back_to_bot(sender_id: str) -> None:
-    send_text_message(sender_id, "Tkveni chat-i kvlav bots gadaeca. Shegidzliat mogvcerot.")
+    send_text_message(sender_id, "თქვენი მოთხოვნა მიღებულია. ოპერატორი მალე დაგიკავშირდებათ!")
 
 
 def notify_operator_new_request(sender_id: str) -> None:
@@ -249,7 +249,7 @@ def notify_operator_new_request(sender_id: str) -> None:
     if not operator_psid:
         logger.warning("Operator PSID is not set yet")
         return
-    send_text_message(operator_psid, f"ZAPROS OPERATORA! Klient ID: {sender_id}")
+    send_text_message(operator_psid, f"🔔 ახალი მოთხოვნა ოპერატორთან! კლიენტი ID: {sender_id}")
 
 
 def notify_operator_bot_restored(sender_id: str) -> None:
@@ -257,7 +257,7 @@ def notify_operator_bot_restored(sender_id: str) -> None:
     if not operator_psid:
         logger.warning("Operator PSID is not set yet")
         return
-    send_text_message(operator_psid, f"BOT VERNULSYA DLYA KLIENTA ID: {sender_id}")
+    send_text_message(operator_psid, f"🤖 ბოტი დაუბრუნდა კლიენტს ID: {sender_id}")
 
 
 def extract_anthropic_text(response) -> str:
@@ -320,7 +320,7 @@ def handle_operator_commands(sender_id: str, user_text: str) -> bool:
 
     if text == SET_OPERATOR_COMMAND:
         set_operator_psid(sender_id)
-        send_text_message(sender_id, "Vy ustanovleny kak operator.")
+        send_text_message(sender_id, "თქვენ დაყენებული ხართ ოპერატორად. ✅.")
         logger.info("Operator PSID set to %s", sender_id)
         return True
 
