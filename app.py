@@ -361,9 +361,9 @@ def handle_message(sender_id: str, event: dict) -> None:
         return
 
     user_text = message.get("text", "")
-normalized_text = (user_text or "").strip()
+    normalized_text = (user_text or "").strip()
 
-if "ოპერატორთან დაკავშირება" in normalized_text:
+    if "ოპერატორთან დაკავშირება" in normalized_text:
     
         add_operator_requested(sender_id)
         notify_user_operator_requested(sender_id)
